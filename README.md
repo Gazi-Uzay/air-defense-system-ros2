@@ -29,30 +29,30 @@ Bu bölüm, projenin başarılı bir şekilde kurulması ve çalıştırılması
   ```
 - **Python:** Python 3.10+
 
-### Workspace Kurulumu
+### Kurulum
 
-1.  **Depoyu Klonlayın:**
-    Projenin kaynak kodunu `src` dizinine klonlayın.
+1.  **Depoyu Klonlayın ve Proje Dizinine Girin:**
+    Bu komut projeyi `hss_ws` adında bir klasöre klonlar ve sizi o klasörün içine yönlendirir.
     ```bash
-    git clone https://github.com/Gazi-Uzay/air-defense-system-ros2.git hss_ws/src
+    git clone https://github.com/Gazi-Uzay/air-defense-system-ros2.git hss_ws
+    cd hss_ws
     ```
 
 2.  **ROS Bağımlılıklarını Kurun:**
-    Workspace'in ana dizininde (`hss_ws/`) `rosdep`'i çalıştırarak eksik ROS paketlerini kurun.
+    Artık proje ana dizinindeyken (`hss_ws/` içinde), `rosdep`'i çalıştırarak eksik ROS paketlerini kurun.
     ```bash
     sudo apt-get update
     rosdep install -i --from-path src --rosdistro humble -y
     ```
 
 3.  **Python Paketlerini Kurun:**
-    (Eğer varsa) Gerekli Python kütüphanelerini kurun.
+    `pip` kullanarak `requirements.txt` dosyasında listelenen Python kütüphanelerini kurun.
     ```bash
-    # Proje ana dizininde bir requirements.txt dosyası varsa:
-    # pip install -r requirements.txt
+    pip install -r requirements.txt
     ```
 
 4.  **Workspace'i Derleyin:**
-    Geliştirme ortamı için `--symlink-install` kullanarak derleme yapmanız tavsiye edilir.
+    `colcon` ile projenizi derleyin.
     ```bash
     colcon build --symlink-install
     ```
