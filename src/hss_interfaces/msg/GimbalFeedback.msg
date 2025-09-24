@@ -1,0 +1,5 @@
+float32 current_pan_angle
+float32 current_tilt_angle
+float32 imu_roll
+float32 imu_pitch
+float32 imu_yaw
