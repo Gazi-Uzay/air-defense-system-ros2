@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'vision_node = hss_vision.vision_node:main',
+            'camera_publisher_node = hss_vision.camera_publisher_node:main',
         ],
     },
 )
