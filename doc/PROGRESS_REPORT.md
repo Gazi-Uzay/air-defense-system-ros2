@@ -32,11 +32,12 @@ Gimbal kontrolünden sorumlu ROS 2 Python düğümü (`gimbal_control_node.py`) 
 *   `/gimbal/feedback` konusuna `GimbalFeedback` mesajlarını yayınlar.
 *   Şu anda ESP32 ile gerçek iletişimi simüle etmektedir. Gerçek implementasyonda micro-ROS üzerinden ESP32 ile haberleşecektir.
 
-### 2.4. `hss_vision` Paketi (Simüle Edilmiş)
+### 2.4. `hss_vision` Paketi (Geliştirildi)
 
-Görüntü işleme ve hedef tespitinden sorumlu ROS 2 Python düğümü (`vision_node.py`) oluşturulmuştur. Bu düğüm:
+Görüntü işleme ve hedef tespitinden sorumlu ROS 2 Python düğümü (`vision_node.py`) artık `/camera/image_raw` konusundan gelen görüntüleri işleyecek şekilde geliştirilmiştir. Bu düğüm:
+*   `/camera/image_raw` konusuna abonedir.
 *   `/vision/targets` konusuna `TargetArray` mesajlarını yayınlar.
-*   Şu anda kamera beslemesi yerine rastgele (dummy) hedef verileri üretip yayınlamaktadır. Gerçek implementasyonda kamera verilerini işleyecektir.
+*   Şu anda, `camera_publisher_node.py` tarafından sağlanan simüle edilmiş kamera beslemesini kullanarak rastgele (dummy) hedef verileri üretmektedir.
 
 ### 2.5. `hss_op_manager` Paketi (Simüle Edilmiş)
 
