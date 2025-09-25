@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>HSS Ground Station v5 Final</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <style>
+        :root{
+            --bg-color:#10121a;
+            --panel-bg-color:rgba(28,32,46,.75);
+            --glass-border:1px solid rgba(255,255,255,.1);
+            --text-color:#dfe8f7;
+            --primary-color:#E02050;               /* bordo */
+            --primary-color-dark:#9c1436;          /* hover için koyu bordo */
+            --primary-glow:0 0 18px rgba(224,32,80,.55);
+            --danger-color:#ff3c5f;
+            --danger-glow:0 0 15px rgba(255,60,95,.6);
+            --safe-color:#a02040;
+            --hud-stroke-color:#ffffff;
+            --font-body:'Roboto Mono',monospace;
+            --font-display:'Orbitron',sans-serif;
+        }
+
+        *{box-sizing:border-box}
+        body{
+            font-family:var(--font-body);
+            background:radial-gradient(1200px 800px at 70% -10%, rgba(224,32,80,.12), transparent 60%) , var(--bg-color);
+            color:var(--text-color);
+            margin:0;padding:1rem;height:100vh;width:100vw;overflow:hidden;
+        }
+
+        .main-grid{
+            display:grid;grid-template-columns:minmax(280px,1fr) 3fr minmax(280px,1fr);
+            grid-template-rows:auto 1fr;height:100%;gap:1rem;
+        }
+
+        header{
+            grid-column:1/-1;text-align:center;font-family:var(--font-display);
+            font-size:clamp(1.5rem,3vw,2rem);color:var(--primary-color);text-shadow:var(--primary-glow);
+            letter-spacing:.2em
+        }
+
+        .panel{
+            background:var(--panel-bg-color);border:var(--glass-border);backdrop-filter:blur(12px);
+            border-radius:15px;padding:clamp(.75rem,2vw,1.25rem);display:flex;flex-direction:column;gap:1rem;overflow:hidden;
+        }
+
+        .panel h2{
+            font-family:var(--font-display);margin:0 0 1rem 0;padding-bottom:.75rem;
+            border-bottom:1px solid rgba(255,255,255,.1);font-size:clamp(1rem,2vw,1.1em);color:var(--primary-color);
+            letter-spacing:.12em
+        }
+
+        .left-panel{grid-column:1;grid-row:2}
+        .right-panel{grid-column:3;grid-row:2}
+
+        .status-grid{display:grid;grid-template-columns:110px 1fr;gap:.75rem;font-size:clamp(.8rem,1.5vw,.9em);align-items:baseline}
+        .status-grid strong{font-weight:500;color:#a0a8b8}
+        #op_state{font-weight:700;font-size:1.1em;color:var(--primary-color)}
+
+        #targets-list-container{flex-grow:1;display:flex;flex-direction:column;min-height:150px}
+        #targets-list{list-style:none;padding:0;margin:0;overflow-y:auto;padding-right:10px}
+        #targets-list li{background-color:rgba(0,0,0,.2);padding:8px;border-radius:5px;margin-bottom:8px;border-left:3px solid var(--primary-color);font-size:.85em}
+
+        .mode-controls{display:flex;flex-direction:column;gap:.75rem}
+        .mode-controls button{
+            background:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.35));
+            color:var(--text-color);
+            border:1px solid rgba(255,255,255,.12);
+            padding:1rem;border-radius:10px;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
+            text-align:left;font-size:clamp(.8rem,1.5vw,.9em);font-weight:500;letter-spacing:.04em;position:relative;isolation:isolate;
+        }
+        .mode-controls button:hover{
+            background:linear-gradient(180deg, var(--primary-color), var(--primary-color-dark));
+            color:#0b0d13;border-color:var(--primary-color);
+            box-shadow:0 0 0 1px rgba(224,32,80,.35) inset, var(--primary-glow);
+            transform:translateY(-1px);
+        }
+        .mode-controls button.active{
+            background:linear-gradient(180deg, var(--primary-color), var(--primary-color-dark));
+            color:#0b0d13;font-weight:700;border-color:var(--primary-color);box-shadow:var(--primary-glow);
+        }
+        .mode-controls button.safe-mode.active{
+            background:linear-gradient(180deg, var(--safe-color), #6f1730);border-color:var(--safe-color);color:white;box-shadow:0 0 15px rgba(160,32,64,.6);
+        }
+
+        .center-panel{grid-column:2;grid-row:2;display:flex;flex-direction:column;gap:1rem}
+        #camera-feed{
+            flex-grow:1;background:#000;border-radius:15px;position:relative;overflow:hidden;cursor:crosshair;border:var(--glass-border);min-height:200px;
+            box-shadow:inset 0 0 0 1px rgba(255,255,255,.03), 0 0 24px rgba(0,0,0,.5);
+        }
+
+        .actions-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 0 auto;
+        }
+
+        .actions-container button {
+            width: 250px;           /* sabit genişlik */
+            height: 50px;           /* sabit yükseklik */
+            border-radius: 9999px;  /* oval/pill form */
+            padding: 0;             /* yüksekliği padding değil height belirlesin */
+            color: #fff;
+            font-family: var(--font-display);
+            font-size: clamp(1.0rem, .5vw, 1.1em);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s ease;
+            text-shadow: 0 0 10px #000;
+            letter-spacing: .08em;
+            border: 2px solid transparent;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #fire-button {
+            border-color: var(--danger-color);
+            background-color: rgba(255, 60, 95, .4);
+            animation: pulse 2s infinite;
+        }
+        #fire-button:hover {
+            background-color: rgba(255, 60, 95, .7);
+            box-shadow: var(--danger-glow);
+            animation: none;
+        }
+
+        #stop-button {
+            background-color: #b71c1c; /* Darker Red */
+            border-color: #f44336;
+        }
+        #stop-button:hover {
+            background-color: #f44336;
+            box-shadow: 0 0 20px rgba(244, 67, 54, .6);
+        }
+
+        #safe-button {
+            background-color: var(--safe-color);
+            border-color: #c55372;
+        }
+        #safe-button:hover {
+            background-color: #6f1730;
+            box-shadow: 0 0 15px rgba(160,32,64,.6);
+        }
+
+        @keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(255,60,95,.3)}50%{box-shadow:0 0 30px rgba(255,60,95,.6)}}
+
+        .target-box{position:absolute;border:2px solid var(--danger-color);box-sizing:border-box;transition:all .1s ease-in-out;z-index:20;border-radius:6px}
+        .target-box .label{position:absolute;top:-20px;left:0;background-color:var(--danger-color);color:#fff;padding:2px 6px;font-size:12px;border-radius:3px}
+
+        #hud-overlay{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;font-family:var(--font-body)}
+        .hud-element{stroke:var(--hud-stroke-color);stroke-width:2;opacity:.9;fill:none}
+        .hud-thin{stroke-width:1.2;opacity:.35}
+        .hud-text{fill:var(--hud-stroke-color);stroke:none;opacity:.9;font-size:22px;letter-spacing:.08em}
+        .hud-text-bg{fill:rgba(0,0,0,.25);stroke:none}
+
+        @keyframes sweepRotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes dashSpin{to{stroke-dashoffset:-260}}
+        @keyframes blinkSoft{50%{opacity:.55}}
+        @keyframes gridScroll{to{transform:translateX(30px)}}
+
+        .click-marker {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 2px solid var(--primary-color);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: click-fade 0.5s ease-out forwards;
+            pointer-events: none;
+            z-index: 30;
+        }
+        @keyframes click-fade {
+            from {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 1;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width:1024px){
+            body{overflow:auto}
+            .main-grid{grid-template-columns:1fr;grid-template-rows:auto}
+            header,.left-panel,.center-panel,.right-panel{grid-column:1/-1;grid-row:auto}
+            .center-panel{min-height:50vh}
+        }
+    </style>
+</head>
+<body>
+<div class="main-grid">
+    <header>AIR DEFENSE SYSTEM CONTROL STATION</header>
+
+    <div class="left-panel panel">
+        <div id="system-status">
+            <h2>SYSTEM STATUS</h2>
+            <div class="status-grid">
+                <strong>Mode:</strong> <span id="op_state">UNKNOWN</span>
+                <strong>Pan Angle:</strong> <span id="pan_angle">0.00 °</span>
+                <strong>Tilt Angle:</strong> <span id="tilt_angle">0.00 °</span>
+            </div>
+        </div>
+        <div id="targets-list-container">
+            <h2>DETECTED TARGETS</h2>
+            <ul id="targets-list"></ul>
+        </div>
+    </div>
+
+    <div class="center-panel">
+        <div id="camera-feed">
+            <img id="video-stream" src="/video_feed" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;" alt="Camera Feed">
+            <!-- FUTURISTIC HUD -->
+            <svg id="hud-overlay" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                    <!-- Glow -->
+                    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="2.2" result="blur"/>
+                        <feMerge>
+                            <feMergeNode in="blur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                    <!-- Grid pattern -->
+                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" class="hud-thin"/>
+                    </pattern>
+                </defs>
+
+                <!-- Subtle moving grid -->
+                <g filter="url(#softGlow)" opacity="0.4" style="transform-origin:960px 540px; animation:gridScroll 6s linear infinite;">
+                    <rect x="0" y="0" width="1920" height="1080" fill="url(#grid)"/>
+                </g>
+
+                <!-- Reticle core -->
+                <g id="reticleGroup" class="hud-element" filter="url(#softGlow)">
+                    <path d="M 960,440 L 960,500 M 960,580 L 960,640"/>
+                    <path d="M 860,540 L 920,540 M 1000,540 L 1060,540"/>
+                    <circle cx="960" cy="540" r="80" stroke-dasharray="14 10" style="animation:blinkSoft 2.2s ease-in-out infinite"/>
+                    <path d="M 960,300 L 960,320 M 960,760 L 960,780" stroke-width="1.5" opacity=".7"/>
+                    <path d="M 720,540 L 740,540 M 1180,540 L 1200,540" stroke-width="1.5" opacity=".7"/>
+                    <path d="M 930 510 L 900 540 L 930 570" />
+                    <path d="M 990 510 L 1020 540 L 990 570" />
+                    <g style="transform-origin:960px 540px; animation:sweepRotate 6s linear infinite">
+                        <path d="M 960 540 L 960 350" stroke-dasharray="6 12" opacity=".6"/>
+                    </g>
+                    <circle cx="960" cy="540" r="150" stroke-dasharray="20 12" style="animation:dashSpin 4s linear infinite" opacity=".65"/>
+                </g>
+
+                <!-- Tilt scale -->
+                <g id="tiltScale" class="hud-element" filter="url(#softGlow)">
+                    <line x1="1820" y1="200" x2="1820" y2="880"/>
+                    <text class="hud-text" x="1800" y="180" text-anchor="middle">TILT</text>
+                    <rect class="hud-text-bg" x="1690" y="520" width="120" height="40"/>
+                    <text id="tiltValue" class="hud-text" x="1750" y="550" text-anchor="middle">0.0°</text>
+                    <g opacity=".55">
+                        <path d="M1820 240 h 24 M1820 300 h 24 M1820 360 h 24 M1820 420 h 24 M1820 480 h 24 M1820 540 h 24 M1820 600 h 24 M1820 660 h 24 M1820 720 h 24 M1820 780 h 24 M1820 840 h 24" stroke-width="1.4"/>
+                    </g>
+                </g>
+
+                <!-- Pan scale -->
+                <g id="panScale" class="hud-element" filter="url(#softGlow)">
+                    <line x1="400" y1="1000" x2="1520" y2="1000"/>
+                    <text class="hud-text" x="960" y="1050" text-anchor="middle">PAN</text>
+                    <rect class="hud-text-bg" x="900" y="940" width="120" height="40"/>
+                    <text id="panValue" class="hud-text" x="960" y="970" text-anchor="middle">0.0°</text>
+                    <g opacity=".55">
+                        <path d="M460 1000 v 24 M620 1000 v 24 M780 1000 v 24 M940 1000 v 24 M1080 1000 v 24 M1240 1000 v 24 M1400 1000 v 24" stroke-width="1.4"/>
+                    </g>
+                </g>
+
+                <!-- Horizon / compass line -->
+                <g class="hud-element" filter="url(#softGlow)" opacity=".7">
+                    <path d="M 120 540 L 1800 540" stroke-dasharray="8 10"/>
+                </g>
+
+                <!-- Status Panel -->
+                <g id="statusPanel" filter="url(#softGlow)">
+                    <rect class="hud-text-bg" x="40" y="40" width="360" height="110" rx="6"/>
+                    <text class="hud-text" x="220" y="70" font-size="22" text-anchor="middle">MODE</text>
+                    <text id="modeValue" class="hud-text" x="220" y="110" font-size="28" font-weight="bold" text-anchor="middle">UNKNOWN</text>
+                </g>
+            </svg>
+        </div>
+        <div class="actions-container">
+            <button id="safe-button" onclick="setMode('SAFE')">SAFE MODE</button>
+            <button id="fire-button" onclick="fire()">FIRE LASER</button>
+            <button id="stop-button" onclick="emergencyStop()">EMERGENCY STOP</button>
+        </div>
+    </div>
+
+    <div class="right-panel panel">
+        <h2>OPERATION MODE</h2>
+        <div class="mode-controls">
+            <button id="mode-AUTO_TRACK" onclick="setMode('AUTO_TRACK')">Auto Track</button>
+            <button id="mode-MANUAL_TRACK" onclick="setMode('MANUAL_TRACK')">Manual Track</button>
+            <button id="mode-AUTO_KILL_COLOR" onclick="setMode('AUTO_KILL_COLOR')">Auto Kill (Color)</button>
+            <button id="mode-QR_ENGAGE" onclick="setMode('QR_ENGAGE')">QR Engage</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = '';
+
+    function updateActiveMode(currentMode){
+        document.querySelectorAll('.mode-controls button').forEach(btn=>{
+            btn.classList.toggle('active', btn.id === `mode-${currentMode}`);
+        });
+        // Also handle the main safe button
+        document.getElementById('safe-button').classList.toggle('active', currentMode === 'SAFE');
+    }
+
+    async function updateState(){
+        try{
+            const response = await fetch(API_URL + '/api/state');
+            if(!response.ok) throw new Error(`Network error: ${response.statusText}`);
+            const state = await response.json();
+
+            document.getElementById('op_state').textContent = state.op_state || 'UNKNOWN';
+            document.getElementById('pan_angle').textContent = (state.gimbal_feedback?.pan?.toFixed(2) || '0.00') + ' °';
+            document.getElementById('tilt_angle').textContent = (state.gimbal_feedback?.tilt?.toFixed(2) || '0.00') + ' °';
+
+            document.getElementById('panValue').textContent  = `${state.gimbal_feedback?.pan?.toFixed(1)  || '0.0'}°`;
+            document.getElementById('tiltValue').textContent = `${state.gimbal_feedback?.tilt?.toFixed(1) || '0.0'}°`;
+            document.getElementById('modeValue').textContent = state.op_state || 'UNKNOWN';
+
+            updateActiveMode(state.op_state);
+            updateTargetDisplay(state.targets || []);
+        }catch(err){
+            console.error("Failed to fetch state:", err);
+            document.getElementById('op_state').textContent = 'ERROR';
+        }
+    }
+
+    function updateTargetDisplay(targets){
+        const feed = document.getElementById('camera-feed');
+        const list = document.getElementById('targets-list');
+
+        feed.querySelectorAll('.target-box').forEach(b=>b.remove());
+        if(list) list.innerHTML = '';
+
+        targets.forEach(target=>{
+            const box = document.createElement('div');
+            box.className = 'target-box';
+            box.style.left   = `${target.x * 100}%`;
+            box.style.top    = `${target.y * 100}%`;
+            box.style.width  = `${target.w * 100}%`;
+            box.style.height = `${target.h * 100}%`;
+
+            const label = document.createElement('div');
+            label.className = 'label';
+            label.textContent = `ID: ${target.id}`;
+            box.appendChild(label);
+            feed.appendChild(box);
+
+            if(list){
+                const li = document.createElement('li');
+                li.textContent = `ID: ${target.id}, Color: ${target.color}, Pos: (${target.x.toFixed(2)}, ${target.y.toFixed(2)})`;
+                list.appendChild(li);
+            }
+        });
+    }
+
+    async function setMode(modeName){
+        try{
+            await fetch(API_URL + '/api/set_mode', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({mode:modeName})
+            });
+        }catch(err){ console.error("Failed to set mode:", err); }
+    }
+
+    async function fire(){
+        try{
+            await fetch(API_URL + '/api/fire', { method:'POST' });
+        }catch(err){ console.error("Failed to fire:", err); }
+    }
+
+    async function emergencyStop(){
+        try{
+            await fetch(API_URL + '/api/emergency_stop', { method:'POST' });
+        }catch(err){ console.error("Failed to send emergency stop:", err); }
+    }
+
+    document.getElementById('camera-feed').addEventListener('click',(ev)=>{
+        const rect = ev.currentTarget.getBoundingClientRect();
+        const x = (ev.clientX - rect.left) / rect.width;
+        const y = (ev.clientY - rect.top) / rect.height;
+
+        // Create and show click marker
+        const marker = document.createElement('div');
+        marker.className = 'click-marker';
+        marker.style.left = `${x * 100}%`;
+        marker.style.top = `${y * 100}%`;
+        ev.currentTarget.appendChild(marker);
+
+        // Remove marker after animation
+        setTimeout(() => {
+            marker.remove();
+        }, 500); // Match animation duration
+
+        const rosX = (x - 0.5) * 2.0;
+        const rosY = (y - 0.5) * -2.0;
+        sendMouseTarget(rosX, rosY);
+    });
+
+    async function sendMouseTarget(x,y){
+        try{
+            await fetch(API_URL + '/api/mouse_target', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({x,y})
+            });
+        }catch(err){ console.error("Failed to send mouse target:", err); }
+    }
+
+    setInterval(updateState, 500);
+    window.onload = updateState;
+</script>
+</body>
+</html>
