@@ -27,3 +27,6 @@ Thumbs.db
 *.bak
 *.orig
 *.rej
+
+# Ignore src folder, it will be managed by vcs
+src/

@@ -1,0 +1,5 @@
+repositories:
+  src/hss_interfaces:
+    type: git
+    url: https://github.com/Gazi-Uzay/hss-interfaces.git
+    version: main
