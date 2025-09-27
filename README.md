@@ -1,71 +1,144 @@
-# HSS Projesi
+# 🚀 HSS (Hava Savunma Sistemi)
 
-Bu workspace, HSS (Hedefleme ve Savunma Sistemi) projesinin ROS2 tabanlı yazılımlarını içermektedir. Sistem, bir gimbal üzerindeki kamera aracılığıyla hedef tespiti, takibi ve yönetimi görevlerini yerine getirmek üzere tasarlanmıştır.
+Bu workspace, **HSS (Hava Savunma Sistemi)** projesinin ROS 2
+tabanlı yazılımlarını içermektedir.\
+Sistem, bir gimbal üzerindeki kamera aracılığıyla hedef tespiti, takibi
+ve angajman görevlerini otonom şekilde yerine getirmek üzere
+tasarlanmıştır.
 
-## Workspace Yapısı
+------------------------------------------------------------------------
 
-Proje, aşağıdaki ROS2 paketlerinden oluşmaktadır:
+## ⚙️ Sistem Gereksinimleri
 
-- `hss_bringup`: Sistemin tüm node'larını başlatan ana launch dosyalarını içerir.
-- `hss_firmware`: Gimbal ve sensörleri kontrol eden mikrodenetleyici (muhtemelen bir ESP32 veya benzeri) için PlatformIO tabanlı firmware kodunu barındırır.
-- `hss_gimbal_control`: ROS2 üzerinden gelen komutlarla gimbal'ı kontrol eden Python node'unu içerir.
-- `hss_gui`: Operatörün sistemi izlemesi ve komut göndermesi için PyQt veya benzeri bir kütüphane ile geliştirilmiş arayüz node'unu içerir.
-- `hss_interfaces`: Projeye özgü custom ROS2 mesaj (`.msg`) ve servis (`.srv`) tanımlamalarını barındırır.
-- `hss_op_manager`: Sistemin genel operasyon mantığını (örneğin, mod değiştirme, hedef atama) yöneten state machine veya mantık node'unu içerir.
-- `hss_vision`: Kamera görüntüsünü işleyerek hedef tespiti ve takibi yapan bilgisayarlı görü node'unu içerir.
+  Bileşen               Gereksinim
+  --------------------- ------------------------------------
+  **İşletim Sistemi**   Ubuntu 22.04 LTS
+  **ROS 2 Sürümü**      Humble Hawksbill
+  **Python**            3.10+
+  **PlatformIO**        Firmware derlemesi için gereklidir
 
-## Sistem Gereksinimleri ve Kurulum
+### Gerekli Araçların Kurulumu
 
-Bu bölüm, projenin başarılı bir şekilde kurulması ve çalıştırılması için gereken adımları ve bağımlılıkları detaylandırmaktadır.
+Aşağıdaki komutlar ROS 2 workspace yönetimi, bağımlılık çözümü ve
+firmware derlemesi için gerekli araçları yükler:
 
-### Ön Gereksinimler
+``` bash
+sudo apt update
+sudo apt install python3-vcstool python3-colcon-common-extensions -y
 
-- **İşletim Sistemi:** Ubuntu 22.04 LTS
-- **ROS 2 Sürümü:** ROS 2 Humble Hawksbill
-  - [Resmi Kurulum Talimatları](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html)
-- **PlatformIO Core:** Firmware derlemesi için gereklidir.
-  ```bash
-  pip install -U platformio
-  ```
-- **Python:** Python 3.10+
+pip install -U platformio
+```
 
-### Kurulum
+------------------------------------------------------------------------
 
-1.  **Depoyu Klonlayın ve Proje Dizinine Girin:**
-    Bu komut projeyi `hss_ws` adında bir klasöre klonlar ve sizi o klasörün içine yönlendirir.
-    ```bash
-    git clone https://github.com/Gazi-Uzay/air-defense-system-ros2.git hss_ws
-    cd hss_ws
-    ```
+## 🧩 Kurulum Adımları
 
-2.  **ROS Bağımlılıklarını Kurun:**
-    Artık proje ana dizinindeyken (`hss_ws/` içinde), `rosdep`'i çalıştırarak eksik ROS paketlerini kurun.
-    ```bash
-    sudo apt-get update
-    rosdep install -i --from-path src --rosdistro humble -y
-    ```
+### 1️⃣ Workspace'i Klonlayın
 
-3.  **Python Paketlerini Kurun:**
-    `pip` kullanarak `requirements.txt` dosyasında listelenen Python kütüphanelerini kurun.
-    ```bash
-    pip install -r requirements.txt
-    ```
+Proje iki farklı şekilde kurulabilir:
 
-4.  **Workspace'i Derleyin:**
-    `colcon` ile projenizi derleyin.
-    ```bash
-    colcon build --symlink-install
-    ```
+#### 🔹 Henüz bir workspace'iniz yoksa
 
-## Çalıştırma
+Yeni bir ROS 2 workspace oluşturmak için:
 
-Her yeni terminalde workspace'i kaynak olarak göstermeniz gerekmektedir.
+``` bash
+git clone https://github.com/Gazi-Uzay/air-defense-system-ros2.git
+cd air-defense-system-ros2
+```
 
-```bash
+Bu yöntem, `src/`, `hss.repos`, `README.md`, `requirements.txt`,
+`LICENSE` ve `docs/` klasörlerini içeren tam bir **workspace**
+oluşturur.
+
+------------------------------------------------------------------------
+
+#### 🔹 Zaten bir workspace'iniz varsa (örneğin `~/Desktop/hss_ws`):
+
+Mevcut workspace'inize HSS projesini doğrudan entegre etmek için:
+
+``` bash
+cd ~/Desktop/hss_ws
+git clone https://github.com/Gazi-Uzay/air-defense-system-ros2.git .
+```
+
+> Bu komutun sonundaki `.` (nokta) çok önemlidir.\
+> Tüm dosyalar (`src/`, `hss.repos`, `README.md`, `requirements.txt`,
+> `docs/` vb.)\
+> doğrudan mevcut workspace'inizin köküne indirilir.\
+> Böylece `air-defense-system-ros2/` gibi ekstra bir alt klasör
+> oluşturulmaz.
+
+------------------------------------------------------------------------
+
+### 2️⃣ ROS Bağımlılıklarını Kurun
+
+``` bash
+rosdep update
+rosdep install --from-paths src --ignore-src -r -y
+```
+
+------------------------------------------------------------------------
+
+### 3️⃣ Python Kütüphanelerini Kurun
+
+``` bash
+pip install -r requirements.txt
+```
+
+------------------------------------------------------------------------
+
+### 4️⃣ Workspace'i Derleyin
+
+``` bash
+colcon build --symlink-install
+```
+
+Derleme tamamlandıktan sonra her terminalde ortam değişkenlerini
+yükleyin:
+
+``` bash
 source install/setup.bash
+```
+
+> Kalıcı yapmak isterseniz:
+>
+> ``` bash
+> echo "source ~/Desktop/hss_ws/install/setup.bash" >> ~/.bashrc
+> ```
+
+------------------------------------------------------------------------
+
+## 🚀 Çalıştırma
+
+Sistemi başlatmak için:
+
+``` bash
 ros2 launch hss_bringup hss_system.launch.py
 ```
 
-## Dokümantasyon
+> Bu launch dosyası, gimbal kontrolü, görüntü işleme, operasyon
+> yöneticisi ve GUI dahil olmak üzere tüm bileşenleri çalıştırır.
 
-Proje ile ilgili daha detaylı dokümanlara `doc/` dizini altından ulaşabilirsiniz.
+------------------------------------------------------------------------
+
+## 📚 Dokümantasyon
+
+Proje ile ilgili detaylı teknik belgeler ve diyagramlara `docs/`
+klasöründen ulaşabilirsiniz.\
+Her alt paketin kendi deposunda da `README.md` ve `docs/` klasörleri
+bulunmaktadır.
+
+------------------------------------------------------------------------
+
+## 🧠 Notlar
+
+-   `src/` klasörü Git tarafından izlenmez (`.gitignore` ile
+    dışlanmıştır).\
+    Her geliştirici `vcs import` komutu ile kendi ortamını
+    oluşturmalıdır.\
+
+-   Alt repoları güncellemek için:
+
+    ``` bash
+    vcs pull src
+    ```
