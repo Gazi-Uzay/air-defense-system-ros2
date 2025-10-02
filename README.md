@@ -133,12 +133,44 @@ ros2 launch hss_bringup hss_system.launch.py
 
 ------------------------------------------------------------------------
 
-## 📚 Dokümantasyon
+## 📖 Operasyonel Durumlar (`OpState.detail`)
 
-Proje ile ilgili detaylı teknik belgeler ve mimari diyagramlara `docs/`
-klasöründen ulaşabilirsiniz.\
-Her alt depo kendi içerisinde ayrıca `README.md` ve `docs/` klasörleri
-barındırmaktadır.
+Sistemin kullanıcı arayüzünde gösterilecek detaylı durum bilgileri, `/op/state` topic'indeki `OpState.msg` mesajının `detail` alanıyla iletilir. Bu, `operation_manager` ve `UI`'ın aynı dili konuşmasını sağlar. Aşağıda, ana modlar için tipik `detail` metinleri listelenmiştir:
+
+| Ana Mod (`mode_text`) | Örnek `detail` Metinleri | Açıklama |
+| :--- | :--- | :--- |
+| `SAFE` | `"Sistem hazır"`, `"Kalibrasyon bekleniyor"` | Sistemin bekleme veya başlangıç durumları. |
+| `MANUAL_TRACK` | `"Operatör kontrolünde"` | Kullanıcının fare ile gimbal'ı yönlendirdiği durum. |
+| `AUTO_TRACK` | `"Hedef aranıyor"`, `"Hedef merkezleniyor"`, `"Hedef kilitli"` | Otonom takip modunun alt adımları. |
+| `AUTO_KILL` | `"Düşman aranıyor"`, `"Kilitlenme: 1.2sn"`, `"HEDEF KİLİTLENDİ"` | Otonom angajman modunun alt adımları. |
+| `EMERGENCY` | `"Acil durum aktif"`, `"Komut zaman aşımı"` | Acil durumun sebebini belirten metinler. |
+
+> **Not:** Bu liste genişletilebilir. UI, bu metinleri doğrudan ekranda göstermeye hazır olmalıdır.
+
+---
+
+## 📖 Proje Dokümantasyonu
+
+Projenin mimarisi, gereksinimleri ve bileşenlerinin detayları `docs/` klasörü altında yapılandırılmıştır.
+
+### 🏛️ Mimari ve Tasarım (`docs/architecture/`)
+
+Bu klasör, projenin üst seviye tasarım kararlarını ve genel yapısını içerir.
+
+-   **📄 Ürün Gereksinimleri Dokümanı (PRD):** Projenin amacını, kapsamını ve genel fonksiyonel gereksinimlerini tanımlar.
+-   **📡 İletişim Mimarisi:** Tüm ROS 2 topic, service ve mesaj tanımlarını içeren merkezi iletişim kontratı.
+-   **🌳 Proje Ağacı:** Sistemi oluşturan tüm düğümlerin (node) ve paketlerin sorumluluklarını bir bakışta özetler.
+
+### 📦 Düğüm (Node) Detayları (`docs/nodes/`)
+
+Her bir ROS 2 düğümünün detaylı teknik dokümanı bu klasörde bulunur. Her dosya, düğümün görevlerini, iletişim arayüzünü (I/O) ve parametrelerini açıklar.
+
+-   **📸 `camera_driver`:** Kamera donanımından görüntü ve bilgi yayınlar.
+-   **👁️ `vision_processor_node`:** Görüntüleri işleyerek hedefleri tespit eder.
+-   **🧠 `operation_manager_node`:** Sistemin merkezi karar alma ve mod yönetimi birimidir.
+-   **🔄 `gimbal_controller_node`:** Dış kontrol döngüsünü çalıştırarak gimbal için hız komutları üretir.
+-   **🤖 `micro_ros_agent`:** Donanım ile ROS 2 arasında köprü kuran iç kontrol döngüsüdür.
+-   **🖥️ `ground_station_gateway`:** Operatör arayüzü (GUI) ile ROS 2 ağı arasındaki bağlantıyı sağlar.
 
 ------------------------------------------------------------------------
 
