@@ -28,5 +28,6 @@ Thumbs.db
 *.orig
 *.rej
 
-# Ignore src folder, it will be managed by vcs
-src/
+# Onun yerine:
+src/**
+!src/.gitkeep
