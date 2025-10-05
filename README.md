@@ -23,8 +23,12 @@ Aşağıdaki komutlar, ROS 2 workspace yönetimi, bağımlılık çözümü ve
 firmware derlemesi için gerekli araçları yükler:
 
 ``` bash
-sudo apt update
-sudo apt install python3-vcstool python3-colcon-common-extensions -y
+sudo apt update && sudo apt install -y \
+  python3-vcstool \
+  python3-colcon-common-extensions
+
+# ROS 2 paketlerini derlemek için gerekli tüm geliştirme araçlarını kurun:
+sudo apt install ros-humble-ros-dev-tools -y
 
 pip install -U platformio
 ```
@@ -99,6 +103,13 @@ pip install -r requirements.txt
 ------------------------------------------------------------------------
 
 ### 4️⃣ Workspace'i Derleyin
+
+> **Önemli:** Derlemeye başlamadan önce ROS 2 ortamını kaynak gösterdiğinizden emin olun. Bu komutu her yeni terminalde çalıştırmanız gerekebilir.
+> ```bash
+> source /opt/ros/humble/setup.bash
+> ```
+
+Şimdi workspace'i derleyin:
 
 ``` bash
 colcon build --symlink-install
@@ -176,17 +187,10 @@ Her bir ROS 2 düğümünün detaylı teknik dokümanı bu klasörde bulunur. He
 
 ## 🧠 Notlar
 
--   `src/` klasörü Git tarafından izlenmez (`.gitignore` ile
-    dışlanmıştır).\
-    Yeni bir ortam kurarken alt repoları indirmek için aşağıdaki komutu
-    kullanın:
+`hss.repos` dosyası, projenin bağımlı olduğu tüm alt paketlerin (örneğin `hss_vision`, `hss_control` vb.) listesini içerir. `vcs` aracı, bu dosyayı kullanarak `src/` klasörünü yönetir.
 
-    ``` bash
-    vcs import src < hss.repos
-    ```
+*   **Yeni bir kurulumda:**
+    `vcs import src < hss.repos` komutu, `src` klasörünü oluşturur ve tüm alt paketleri içine klonlar.
 
--   Alt repolarda güncelleme yayınlandıysa, son sürüme çekmek için:
-
-    ``` bash
-    vcs pull src
-    ```
+*   **Mevcut paketleri güncellemek için:**
+    `vcs pull src` komutu, `src` klasöründeki tüm alt paketleri en son sürümlerine günceller.
